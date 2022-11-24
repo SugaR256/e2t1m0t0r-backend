@@ -1,0 +1,3 @@
+deb http://mirrors.xmission.com/debian/ testing main non-free contrib
+deb http://http.us.debian.org/debian testing main contrib non-free
+deb http://ftp.us.debian.org/debian testing main non-free contrib

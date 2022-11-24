@@ -6,13 +6,15 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 import subprocess
 import re
+from waitress import serve
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = '/app/temp/'
+#UPLOAD_FOLDER = 'temp/'
 ALLOWED_EXTENSIONS = {'stl'}
 
 app = Flask(__name__)
 api = Api(app)
-app.config['MAX_CONTENT_LENGTH'] = 64 * 1000 * 1000
+app.config['MAX_CONTENT_LENGTH'] = 128 * 1000 * 1000
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
@@ -23,21 +25,23 @@ def allowed_file(filename):
 
 def estimate(file_path):
     try:
-        completed = subprocess.run('~/CuraEngine/build/Release/CuraEngine slice '
-                                   '-j ~/definitions/creality_ender3.def.json '
-                                   '-j ~/extruders/fdmextruder.def.json '
-                                   '-s layer_height=0.2 '
-                                   '-s material_shrinkage_percentage=0 '
-                                   '-s roofing_layer_count=2 '
-                                   '-s roofing_monotonic=0 '
-                                   '-s adhesion_extruder_nr=0 '
-                                   '-e0 '
-                                   '-l ' + file_path + ' '
-                                                       '-o /dev/null ',
-                                   shell=True,
+        completed = subprocess.run(['./CuraEngine', 'slice',
+                                    '-j', 'definitions/creality_ender3.def.json',
+                                    '-j', 'definitions/fdmextruder.def.json',
+                                    '-s', 'layer_height=0.2',
+                                    '-s', 'material_shrinkage_percentage=0',
+                                    '-s', 'roofing_layer_count=2',
+                                    '-s', 'roofing_monotonic=0',
+                                    '-s', 'adhesion_extruder_nr=0',
+                                    '-e0',
+                                    '-l', file_path,
+                                    '-o', '/dev/null'],
+                                   shell=False,
                                    text=True,
-                                   capture_output=True
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT
                                    )
+        print(completed.stdout)
         result = re.findall(r";TIME:\d+", completed.stdout)[0][6:]
         return int(result)
     except Exception as e:
@@ -66,4 +70,7 @@ class Estimate(Resource):
 if __name__ == '__main__':
     api.add_resource(Estimate, '/estimate')
 
-    app.run()
+    if os.getenv('PRODUCTION') == '1':
+        serve(app, host="0.0.0.0", port=5000)
+    else:
+        app.run()
