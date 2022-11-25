@@ -1,4 +1,5 @@
 import os
+import random
 
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
@@ -53,6 +54,8 @@ def estimate(file_path):
 class Estimate(Resource):
     @staticmethod
     def post():
+        request_number = random.randint(1000, 9999)
+        print("Request " + str(request_number) + " started...")
         parser = reqparse.RequestParser()
         parser.add_argument('file', type=FileStorage, location='files')
         args = parser.parse_args()
@@ -64,6 +67,7 @@ class Estimate(Resource):
             file_path = os.path.join(os.environ['HOME'], app.config['UPLOAD_FOLDER'], filename)
             stl_file.save(file_path)
             result = estimate(file_path)
+            print("Request " + str(request_number) + " completed successfuly!")
             return {'duration': result}, 200
 
         return {'error': 'This shouldn\'t happen'}, 500
