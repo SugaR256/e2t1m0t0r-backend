@@ -9,7 +9,6 @@ import re
 from waitress import serve
 
 UPLOAD_FOLDER = '/app/temp/'
-#UPLOAD_FOLDER = 'temp/'
 ALLOWED_EXTENSIONS = {'stl'}
 
 app = Flask(__name__)
@@ -41,11 +40,14 @@ def estimate(file_path):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT
                                    )
-        print(completed.stdout)
         result = re.findall(r";TIME:\d+", completed.stdout)[0][6:]
         return int(result)
     except Exception as e:
         print(str(e))
+    finally:
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+    return -1
 
 
 class Estimate(Resource):
