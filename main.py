@@ -69,8 +69,12 @@ class Estimate(Resource):
             result = estimate(file_path)
             print("Request " + str(request_number) + " completed successfuly!")
             return {'duration': result}, 200
-
         return {'error': 'This shouldn\'t happen'}, 500
+
+    @staticmethod
+    def get():
+        print("Hello!")
+        return {"status": True}, 200
 
 
 if __name__ == '__main__':
