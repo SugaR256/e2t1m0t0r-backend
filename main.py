@@ -11,6 +11,7 @@ from waitress import serve
 
 UPLOAD_FOLDER = '/app/temp/'
 ALLOWED_EXTENSIONS = {'stl'}
+HEADERS = {'Access-Control-Allow-Origin': '*'}
 
 app = Flask(__name__)
 api = Api(app)
@@ -61,20 +62,20 @@ class Estimate(Resource):
         args = parser.parse_args()
         stl_file = args['file']
         if stl_file.filename == '':
-            return {'error': 'No file'}, 400
+            return {'error': 'No file'}, 400, HEADERS
         if stl_file and allowed_file(stl_file.filename):
             filename = secure_filename(stl_file.filename)
             file_path = os.path.join(os.environ['HOME'], app.config['UPLOAD_FOLDER'], filename)
             stl_file.save(file_path)
             result = estimate(file_path)
             print("Request " + str(request_number) + " completed successfuly!")
-            return {'duration': result}, 200
-        return {'error': 'This shouldn\'t happen'}, 500
+            return {'duration': result}, 200, HEADERS
+        return {'error': 'This shouldn\'t happen'}, 500, HEADERS
 
     @staticmethod
     def get():
         print("Hello!")
-        return {"status": True}, 200
+        return {"status": True}, 200, HEADERS
 
 
 if __name__ == '__main__':
