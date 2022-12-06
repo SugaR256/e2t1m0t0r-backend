@@ -85,28 +85,6 @@ class EstimateMultiple(Resource):
         return results, 200
 
 
-class Estimate(Resource):
-    @staticmethod
-    def post():
-        request_number = random.randint(1000, 9999)
-        print('Request ' + str(request_number) + ' started...')
-        parser = reqparse.RequestParser()
-        parser.add_argument('file', required=True, type=FileStorage, location='files')
-        args = parser.parse_args()
-        stl_file = args['file']
-        if stl_file is None or stl_file.filename == '':
-            return {'error': 'No file or file with no name'}, 400
-        elif not allowed_file(stl_file.filename):
-            return {'error': 'Illegal filename or extension'}, 400
-        else:
-            filename = str(uuid.uuid4().hex) + '.stl'
-            file_path = os.path.join(os.environ['HOME'], app.config['UPLOAD_FOLDER'], filename)
-            stl_file.save(file_path)
-            result = estimate(file_path)
-            print('Request ' + str(request_number) + ' completed successfuly!')
-            return {'duration': result}, 200
-
-
 class Status(Resource):
     @staticmethod
     def get():
@@ -115,7 +93,6 @@ class Status(Resource):
 
 
 if __name__ == '__main__':
-    api.add_resource(Estimate, '/estimate')
     api.add_resource(EstimateMultiple, '/estimate_multiple')
     api.add_resource(Status, '/status')
 
